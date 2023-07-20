@@ -1,0 +1,36 @@
+version: '3.9'
+services:
+  traefik:
+    image: "traefik"
+    container_name: "traefik"
+    command: --api.insecure=true --providers.docker
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+  web1:
+    image: "httpd:2.4"
+    container_name: "web1"
+    ports:
+      - 8082:80
+    volumes:
+      - "$PWD/web1:/usr/local/apache2/htdocs/"
+    labels:
+    #
+    # Backticks must be used to enclose the hostname i.e web1.localhost
+    #
+      - "traefik.http.routers.web1.rule=Host(`web1.localhost`)"
+    depends_on:
+      - traefik
+  web2:
+    image: "httpd:2.4"
+    container_name: "web2"
+    ports:
+      - 8081:80
+    volumes:
+      - "$PWD/web2:/usr/local/apache2/htdocs/"
+    labels:
+      - "traefik.http.routers.web2.rule=Host(`web2.localhost`)"
+    depends_on:
+      - traefik
